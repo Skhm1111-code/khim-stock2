@@ -1,1 +1,167 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khim Stock - ជំនួយការចាប់អីវ៉ាន់</title>
+  <link rel="stylesheet" href="./ui/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand-row">
+        <span class="brand-badge" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
+            <rect x="13" y="3" width="8" height="8" rx="1.5"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+            <rect x="13" y="13" width="8" height="8" rx="1.5"></rect>
+          </svg>
+        </span>
+        <div>
+          <h1 class="app-title">Khim Stock Pick</h1>
+          <p class="app-subtitle">មើលលេខក្បាលធ្នើរភ្លាម • ចុចធីកលឿន</p>
+        </div>
+      </div>
 
+      <div class="order-lookup">
+        <input
+          id="orderInput"
+          type="text"
+          class="order-input"
+          placeholder="Scan / វាយលេខ Order (ឧ. 2610506)"
+          aria-label="លេខ Order"
+        />
+        <button id="loadOrderBtn" type="button" class="btn-secondary">បើក</button>
+      </div>
+    </header>
+
+    <section class="summary-card" aria-label="ស្ថានភាព Order">
+      <div class="summary-main">
+        <span class="order-label">Order #<span id="activeOrderCode">2610506</span></span>
+        <span id="progressText" class="progress-pill">ចាប់បាន 0 / 3</span>
+      </div>
+      <div id="remainingHint" class="remaining-text">នៅសល់ 3 មុខ • តម្រៀបតាមលំដាប់ក្បាលធ្នើរ</div>
+    </section>
+
+    <main id="pickList" class="pick-list" aria-live="polite"></main>
+
+    <footer class="thumb-bar">
+      <button id="nextOrderBtn" type="button" class="btn-primary-thumb">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path d="M5 12h14"></path>
+          <path d="M13 5l7 7-7 7"></path>
+        </svg>
+        <span>Scan / ប្តូរ Order បន្ទាប់</span>
+      </button>
+    </footer>
+  </div>
+
+  <script src="./logic/pick-sorter.js"></script>
+  <script>
+    (function () {
+      const fallbackSampleOrders = {
+        "2610506": [
+          { id: "1", shelf: "A-02", code: "3V39", name: "ស្បែកជើង", qty: 1, done: false },
+          { id: "2", shelf: "B-07", code: "A39", name: "អាវ ឈូក", qty: 1, done: false },
+          { id: "3", shelf: "C-04", code: "V985", name: "Spray ការពារមូស", qty: 1, done: false }
+        ]
+      };
+
+      let currentOrder = "2610506";
+      let items = [...fallbackSampleOrders["2610506"]];
+
+      const pickListEl = document.getElementById("pickList");
+      const orderInputEl = document.getElementById("orderInput");
+      const loadOrderBtnEl = document.getElementById("loadOrderBtn");
+      const nextOrderBtnEl = document.getElementById("nextOrderBtn");
+      const activeOrderCodeEl = document.getElementById("activeOrderCode");
+      const progressTextEl = document.getElementById("progressText");
+      const remainingHintEl = document.getElementById("remainingHint");
+
+      function getSortedItems(list) {
+        if (window.PickSorter && typeof window.PickSorter.sortByShelf === "function") {
+          return window.PickSorter.sortByShelf(list);
+        }
+        return [...list].sort((a, b) => String(a.shelf).localeCompare(String(b.shelf)));
+      }
+
+      function render() {
+        const sorted = getSortedItems(items);
+        const doneCount = sorted.filter((x) => x.done).length;
+        const totalCount = sorted.length;
+        const leftCount = totalCount - doneCount;
+
+        activeOrderCodeEl.textContent = currentOrder;
+        progressTextEl.textContent = "ចាប់បាន " + doneCount + " / " + totalCount;
+        remainingHintEl.textContent =
+          leftCount === 0
+            ? "រួចរាល់គ្រប់មុខសម្រាប់ Order នេះ"
+            : "នៅសល់ " + leftCount + " មុខ • ដើរតាមលំដាប់ក្បាលធ្នើរ";
+
+        pickListEl.innerHTML = "";
+        sorted.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "pick-card" + (item.done ? " is-done" : "");
+
+          const infoBox = document.createElement("div");
+          infoBox.className = "pick-info";
+
+          const shelfTag = document.createElement("div");
+          shelfTag.className = "shelf-tag";
+          shelfTag.textContent = "ក្បាលធ្នើរ " + item.shelf;
+
+          const itemLine = document.createElement("div");
+          itemLine.className = "item-line";
+          itemLine.textContent = item.code + " • " + item.name + " ×" + item.qty;
+
+          infoBox.appendChild(shelfTag);
+          infoBox.appendChild(itemLine);
+
+          const checkBtn = document.createElement("button");
+          checkBtn.type = "button";
+          checkBtn.className = "check-btn" + (item.done ? " checked" : "");
+          checkBtn.setAttribute("aria-label", item.done ? "ដកធីកវិញ" : "ធីកថាយករួច");
+          checkBtn.innerHTML =
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+          checkBtn.addEventListener("click", function () {
+            item.done = !item.done;
+            render();
+          });
+
+          card.appendChild(infoBox);
+          card.appendChild(checkBtn);
+          pickListEl.appendChild(card);
+        });
+      }
+
+      loadOrderBtnEl.addEventListener("click", function () {
+        const val = orderInputEl.value.trim();
+        if (val) {
+          currentOrder = val;
+          if (fallbackSampleOrders[val]) {
+            items = fallbackSampleOrders[val].map((x) => ({ ...x, done: false }));
+          } else {
+            items = [
+              { id: Date.now() + "-1", shelf: "A-01", code: val.slice(0, 4).toUpperCase() || "A01", name: "ទំនិញតាម Order", qty: 1, done: false }
+            ];
+          }
+          render();
+        }
+      });
+
+      nextOrderBtnEl.addEventListener("click", function () {
+        orderInputEl.value = "";
+        orderInputEl.focus();
+        items = items.map((x) => ({ ...x, done: false }));
+        const nextNum = Number(currentOrder);
+        currentOrder = Number.isFinite(nextNum) && nextNum > 0 ? String(nextNum + 1) : currentOrder;
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
