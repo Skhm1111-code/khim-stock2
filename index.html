@@ -1,167 +1,626 @@
 <!DOCTYPE html>
 <html lang="km">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Khim Stock - ជំនួយការចាប់អីវ៉ាន់</title>
-  <link rel="stylesheet" href="./ui/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KHIM - រាប់ស្តុក</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KHIM Stock">
+<meta name="theme-color" content="#14532d">
+<link id="iosIcon" rel="apple-touch-icon" sizes="180x180">
+<link id="favIcon" rel="icon" type="image/png">
+<link id="manifestLink" rel="manifest">
+
+<link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=Siemreap&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="top-bar">
-      <div class="brand-row">
-        <span class="brand-badge" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
-            <rect x="13" y="3" width="8" height="8" rx="1.5"></rect>
-            <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
-            <rect x="13" y="13" width="8" height="8" rx="1.5"></rect>
-          </svg>
-        </span>
-        <div>
-          <h1 class="app-title">Khim Stock Pick</h1>
-          <p class="app-subtitle">មើលលេខក្បាលធ្នើរភ្លាម • ចុចធីកលឿន</p>
+<div class="star-layer" id="starLayer" aria-hidden="true"></div>
+<div class="burst-layer" id="burstLayer" aria-hidden="true"></div>
+<div class="blessing-bubble" id="blessingBubble" aria-live="polite"></div>
+
+<header class="hdr" id="mainHeader">
+  <div class="pull-cord-wrap" id="pullCordBtn" title="ទាញ ឬចុចខ្សែ ដើម្បីបើក/បិទ ម៉ាស៊ីនគិតលេខពេញអេក្រង់">
+    <div class="pull-cord-line"></div>
+    <div class="pull-cord-pendant">
+      <div class="pull-cord-cap"></div>
+      <div class="pull-cord-bead"></div>
+      <div class="pull-cord-tassel"></div>
+    </div>
+  </div>
+  <div class="brand" style="flex-direction:column;align-items:flex-start;gap:2px">
+    <div class="bname">KHIM</div>
+    <span class="badge" id="saveBadge">កំពុងផ្ទុក…</span>
+  </div>
+
+  <div class="center-stage" id="centerStage" onclick="handleStageClick()" title="រូបភាពវិលជុំ (GIF) — ចុចដូរ/ជូនពរ">
+    <div class="dancer-fig" id="defaultDancer">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path class="dancer-arm-l" d="M11 21 L4 15" stroke="currentColor" style="color:var(--g)" stroke-width="3.2" stroke-linecap="round"/>
+        <path class="dancer-arm-r" d="M25 21 L32 15" stroke="currentColor" style="color:var(--g)" stroke-width="3.2" stroke-linecap="round"/>
+        <rect x="12" y="19" width="12" height="10" rx="5" fill="#22c55e" stroke="#14532d" stroke-width="2"/>
+        <circle cx="18" cy="11.5" r="7.5" fill="#fef08a" stroke="#14532d" stroke-width="2"/>
+        <circle cx="15.3" cy="11" r="1.3" fill="#111827"/>
+        <circle cx="20.7" cy="11" r="1.3" fill="#111827"/>
+        <path d="M15.5 14 Q18 16.5 20.5 14" stroke="#e11d48" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M14 29 L12 34 M22 29 L24 34" stroke="#14532d" stroke-width="2.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <img id="stageImg" style="display:none" alt="GIF">
+  </div>
+
+  <div class="hdr-right">
+    <div class="logo-wrap" id="logoWrap" title="អូសទៅឆ្វេង/ស្តាំ ឬចុចមើលកូដមិនទាន់ Save">
+      <span class="logo-badge" id="logoBadge">0</span>
+      <div class="app-logo">
+        <svg viewBox="0 0 100 100" fill="none">
+          <polygon points="55,14 82,29 55,44 28,29" fill="#84cc16" stroke="#14532d" stroke-width="4.5" stroke-linejoin="round"/>
+          <line x1="42" y1="21.5" x2="69" y2="36.5" stroke="#14532d" stroke-width="4"/>
+          <polygon points="55,44 82,29 82,62 55,77" fill="#16a34a" stroke="#14532d" stroke-width="4.5" stroke-linejoin="round"/>
+          <polygon points="65,38.5 72,34.5 72,48 65,52" fill="#14532d"/>
+          <polygon points="28,29 55,44 55,77 28,62" fill="#ffffff" stroke="#14532d" stroke-width="4.5" stroke-linejoin="round"/>
+          <path d="M46 40 V71 M32 53 H46 M32 45 L24 53 L32 61 Z" fill="#84cc16" stroke="#84cc16" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M13 33 V69" stroke="#15803d" stroke-width="8.5" stroke-linecap="round"/>
+          <path d="M27 36 L14 51 L27 67" stroke="#15803d" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="77" cy="69" r="15.5" fill="#16a34a" stroke="#ffffff" stroke-width="3.5"/>
+          <path d="M71 69 L75 73 L83 64.5" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <button class="burger" onclick="openM('adminModal')" aria-label="Settings"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<div id="toast"></div>
+
+<main id="mainAppContainer">
+  <div class="progress">
+    <span id="progA">រាប់ហើយ 0/0 កូដ</span>
+    <span id="progB"></span>
+  </div>
+
+  <!-- 3D Liquid Glass Search Bar -->
+  <div class="sw">
+    <div class="glass-search-bar">
+      <input type="text" id="scanInput" placeholder="Search... (កូដ Y158, A-1 ឬ ឆាន K-1 ឬ Barcode)" autocomplete="off" autofocus>
+      <button type="button" class="glass-search-btn" onclick="onEnter()" title="ស្វែងរក / Enter" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="glass-channel-only-row">
+      <div class="glass-code-hint" id="glassNavPos" onclick="openShelfModalForCurrent()" title="ចុចមើលតារាងឆាន">🏆 ឆាន —</div>
+    </div>
+
+    <div class="drop" id="drop"></div>
+  </div>
+
+  <div class="search-shelf-banner" id="searchShelfBanner" onclick="openShelfModalForCurrent()">
+    <span class="ssb-badge" id="ssbBadge">🏆 ឆាន —</span>
+    <span class="ssb-code" id="ssbCode">កូដ: —</span>
+  </div>
+
+  <div class="card" id="card">
+    <div class="ch">
+      <div style="min-width:0;flex:1.1">
+        <div class="code" id="dCode" onclick="copyCodeOnly()" title="ចុចដើម្បី Copy កូដ"></div>
+        <div class="pname" id="dName"></div>
+        <div class="tags-row">
+          <span class="exp-tag" id="dExpStatus" style="display:none"></span>
+        </div>
+      </div>
+      <div class="shelf-mini-box" id="dShelfMini" onclick="openShelfModalForCurrent()" title="ចុចដើម្បីមើល ឬ កំណត់ឆាន">
+        <div class="shelf-mini-hdr">
+          <span class="shelf-trophy-badge" id="dShelfBadge">🏆 ឆាន —</span>
+          <div class="shelf-multi-tabs" id="dShelfTabs" onclick="event.stopPropagation()"></div>
+        </div>
+        <div class="shelf-mini-grid" id="dShelfGrid"></div>
+        <div class="shelf-mini-loc" id="dShelfLoc">ឆាន —</div>
+      </div>
+      <div class="pr"><div class="price" id="dPrice"></div><div class="date" id="dDate"></div></div>
+    </div>
+    <div id="dVars" style="padding:6px 0"></div>
+    <div class="foot">
+      <div class="foot-left">
+        <span class="sl" id="dSys"></span>
+        <span class="foot-channel-tag" id="dFootChannel">🏆 ឆាន —</span>
+      </div>
+      <span class="sv" id="dAct"></span>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="ab btn-undo" onclick="undo()">
+      <span id="icoUndo"></span>
+      <span>Undo</span>
+    </button>
+    <button class="ab btn-png" id="btnPng" onclick="downloadPNG()">
+      <span class="dot"></span>
+      <span id="icoPng"></span>
+      <span>Save PNG</span>
+    </button>
+    <button class="ab btn-tg" id="btnTg" onclick="copyTelegram()">
+      <span class="dot"></span>
+      <span id="icoTg"></span>
+      <span>Telegram</span>
+    </button>
+    <button class="ab btn-edit" onclick="openEdit()">
+      <span id="icoEdit"></span>
+      <span>កែប្រែ</span>
+    </button>
+  </div>
+
+  <div class="pills" id="pills"></div>
+</main>
+
+<!-- FULL-SCREEN LIQUID GLASS CASH OUT / CASIO CALCULATOR -->
+<section class="calc-screen" id="calcScreen" aria-label="Cash Out / ម៉ាស៊ីនគិតលេខពេញអេក្រង់">
+  <div class="calc-inner-wrap">
+    <div class="calc-mini-nav">
+      <button class="calc-arrow-back" onclick="setCalcMode(false)" title="ត្រឡប់ទៅរាប់ស្តុក">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      </button>
+      <span class="calc-brand-tag">KHIM • CASH OUT CALC</span>
+      <button class="calc-arrow-back" onclick="setCalcMode(false)" title="បិទ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="casio-body">
+      <div class="casio-lcd-bezel">
+        <div class="casio-lcd">
+          <div class="casio-lcd-top">
+            <span>CASH OUT • LIQUID GLASS</span>
+            <span class="casio-solar" aria-hidden="true"></span>
+          </div>
+          <div class="calc-expr" id="calcExpr"></div>
+          <div class="calc-val" id="calcVal">0</div>
+          <div class="calc-actions-row">
+            <button class="calc-sub-btn" onclick="flashBtn(this);copyCalcResult()">📋 Copy</button>
+            <button class="calc-sub-btn apply" onclick="flashBtn(this);applyCalcToStock()">+ ដាក់ចូលស្តុក</button>
+          </div>
         </div>
       </div>
 
-      <div class="order-lookup">
-        <input
-          id="orderInput"
-          type="text"
-          class="order-input"
-          placeholder="Scan / វាយលេខ Order (ឧ. 2610506)"
-          aria-label="លេខ Order"
-        />
-        <button id="loadOrderBtn" type="button" class="btn-secondary">បើក</button>
+      <div class="calc-keypad" id="calcKeypad">
+        <button class="ck clr" data-k="AC">AC</button>
+        <button class="ck clr" data-k="DEL">⌫</button>
+        <button class="ck op" data-k="%">%</button>
+        <button class="ck op" data-k="/">÷</button>
+        <button class="ck" data-k="7">7</button>
+        <button class="ck" data-k="8">8</button>
+        <button class="ck" data-k="9">9</button>
+        <button class="ck op" data-k="*">×</button>
+        <button class="ck" data-k="4">4</button>
+        <button class="ck" data-k="5">5</button>
+        <button class="ck" data-k="6">6</button>
+        <button class="ck op" data-k="-">−</button>
+        <button class="ck" data-k="1">1</button>
+        <button class="ck" data-k="2">2</button>
+        <button class="ck" data-k="3">3</button>
+        <button class="ck op" data-k="+">+</button>
+        <button class="ck span2" data-k="0">0</button>
+        <button class="ck" data-k=".">.</button>
+        <button class="ck eq" data-k="=">=</button>
       </div>
-    </header>
-
-    <section class="summary-card" aria-label="ស្ថានភាព Order">
-      <div class="summary-main">
-        <span class="order-label">Order #<span id="activeOrderCode">2610506</span></span>
-        <span id="progressText" class="progress-pill">ចាប់បាន 0 / 3</span>
-      </div>
-      <div id="remainingHint" class="remaining-text">នៅសល់ 3 មុខ • តម្រៀបតាមលំដាប់ក្បាលធ្នើរ</div>
-    </section>
-
-    <main id="pickList" class="pick-list" aria-live="polite"></main>
-
-    <footer class="thumb-bar">
-      <button id="nextOrderBtn" type="button" class="btn-primary-thumb">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-          <path d="M5 12h14"></path>
-          <path d="M13 5l7 7-7 7"></path>
-        </svg>
-        <span>Scan / ប្តូរ Order បន្ទាប់</span>
-      </button>
-    </footer>
+    </div>
   </div>
+</section>
 
-  <script src="./logic/pick-sorter.js"></script>
-  <script>
-    (function () {
-      const fallbackSampleOrders = {
-        "2610506": [
-          { id: "1", shelf: "A-02", code: "3V39", name: "ស្បែកជើង", qty: 1, done: false },
-          { id: "2", shelf: "B-07", code: "A39", name: "អាវ ឈូក", qty: 1, done: false },
-          { id: "3", shelf: "C-04", code: "V985", name: "Spray ការពារមូស", qty: 1, done: false }
-        ]
-      };
+<!-- Shelf Rack Map Modal -->
+<div class="mbg" id="shelfModal" onclick="if(event.target===this)closeM('shelfModal')">
+  <div class="sheet" style="background:#f2f2f7">
+    <div class="sh">
+      <div style="width:48px"></div>
+      <h3>តារាងឆាន</h3>
+      <button class="sh-done" onclick="closeM('shelfModal')">រួចរាល់</button>
+    </div>
 
-      let currentOrder = "2610506";
-      let items = [...fallbackSampleOrders["2610506"]];
+    <div class="shelf-top-bar">
+      <select class="shelf-select" id="shelfRackSelect" onchange="renderShelfModalGrid()"></select>
+      <button class="ios-file-btn" onclick="syncShelfFromGoogleSheet(true)">🔄 Sync 2 Link</button>
+      <button class="ios-file-btn green" onclick="quickAssignCurrentCodeToSelectedSlot()">+ ដាក់កូដនេះ</button>
+    </div>
 
-      const pickListEl = document.getElementById("pickList");
-      const orderInputEl = document.getElementById("orderInput");
-      const loadOrderBtnEl = document.getElementById("loadOrderBtn");
-      const nextOrderBtnEl = document.getElementById("nextOrderBtn");
-      const activeOrderCodeEl = document.getElementById("activeOrderCode");
-      const progressTextEl = document.getElementById("progressText");
-      const remainingHintEl = document.getElementById("remainingHint");
+    <div id="shelfDebugInfo" style="font-size:11.5px;font-weight:700;color:var(--g);background:var(--gs);padding:7px 11px;border-radius:9px;margin-bottom:8px;line-height:1.4"></div>
 
-      function getSortedItems(list) {
-        if (window.PickSorter && typeof window.PickSorter.sortByShelf === "function") {
-          return window.PickSorter.sortByShelf(list);
-        }
-        return [...list].sort((a, b) => String(a.shelf).localeCompare(String(b.shelf)));
-      }
+    <div class="shelf-rack-card">
+      <div class="shelf-rack-title" id="shelfRackTitle">🏆 ឆាន K-1</div>
+      <div class="shelf-tier-grid" id="shelfTierGrid"></div>
+    </div>
 
-      function render() {
-        const sorted = getSortedItems(items);
-        const doneCount = sorted.filter((x) => x.done).length;
-        const totalCount = sorted.length;
-        const leftCount = totalCount - doneCount;
+    <div id="shelfSlotEditor" style="display:none;margin-top:12px;background:#fff;border-radius:14px;padding:12px;border:1px solid #d1d5db">
+      <div style="font-size:13px;font-weight:800;color:var(--g);margin-bottom:6px" id="shelfEditorTitle">កែប្រែកូដក្នុងប្រឡោះ</div>
+      <div style="font-size:11.5px;color:#6b7280;margin-bottom:6px">វាយកូដច្រើនបាន (ខណ្ឌដោយក្បៀស , ឬ Space ឧ. Y158, Z289)</div>
+      <textarea class="inp" id="shelfSlotInput" rows="3" placeholder="ឧ. Y158, Z289, U936"></textarea>
+      <div class="g2">
+        <button class="btn" onclick="saveShelfSlotCodes()">រក្សាទុកប្រឡោះ</button>
+        <button class="btn lt" onclick="$('shelfSlotEditor').style.display='none'">បិទ</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        activeOrderCodeEl.textContent = currentOrder;
-        progressTextEl.textContent = "ចាប់បាន " + doneCount + " / " + totalCount;
-        remainingHintEl.textContent =
-          leftCount === 0
-            ? "រួចរាល់គ្រប់មុខសម្រាប់ Order នេះ"
-            : "នៅសល់ " + leftCount + " មុខ • ដើរតាមលំដាប់ក្បាលធ្នើរ";
+<!-- Unsaved Export List Modal -->
+<div class="mbg" id="unsavedModal" onclick="if(event.target===this)closeM('unsavedModal')">
+  <div class="sheet" style="background:#fff">
+    <div class="sh"><h3>⚠ កូដរាប់ហើយ តែមិនទាន់ Save រូប/ផ្ញើ</h3><button class="sh-done" onclick="closeM('unsavedModal')">បិទ</button></div>
+    <p style="font-size:12px;color:var(--mut);margin-bottom:10px">ចុចលើកូដណាមួយខាងក្រោម ដើម្បីបើកកាត ហើយចុច <b>Save PNG</b> ឬ <b>Telegram</b> ផ្ញើឱ្យគេ៖</p>
+    <div id="unsavedList"></div>
+  </div>
+</div>
 
-        pickListEl.innerHTML = "";
-        sorted.forEach((item) => {
-          const card = document.createElement("article");
-          card.className = "pick-card" + (item.done ? " is-done" : "");
+<!-- Edit Product Modal -->
+<div class="mbg" id="editModal" onclick="if(event.target===this)closeM('editModal')">
+  <div class="sheet" style="background:#fff">
+    <div class="sh"><h3>កែប្រែព័ត៌មាន</h3><button class="sh-done" onclick="closeM('editModal')">បិទ</button></div>
+    <div class="g2"><div><label class="lbl">កូដកាត់</label><input class="inp" id="edCode"></div><div><label class="lbl">តម្លៃ ($)</label><input class="inp" type="number" step="0.01" id="edPrice"></div></div>
+    <div class="g2"><div><label class="lbl">ឈ្មោះអីវ៉ាន់</label><input class="inp" id="edName"></div><div><label class="lbl">ប្រភេទ (ផ្ទៃក្នុង)</label><input class="inp" id="edGroup"></div></div>
+    <label class="lbl" style="margin-top:14px">ពណ៌ | រាប់ | ប្រព័ន្ធ</label>
+    <div id="edRows"></div>
+    <button class="btn lt" onclick="addEdRow()">+ បន្ថែមពណ៌ថ្មី</button>
+    <button class="btn" onclick="applyEdit()">រក្សាទុក</button>
+    <button class="btn rd" onclick="deleteProduct()">លុបកូដនេះ</button>
+  </div>
+</div>
 
-          const infoBox = document.createElement("div");
-          infoBox.className = "pick-info";
+<!-- NEW CLEAN TABBED SETTINGS MODAL -->
+<div class="mbg" id="adminModal" onclick="if(event.target===this)closeM('adminModal')">
+  <div class="sheet settings-sheet">
+    <div class="sh">
+      <div style="width:48px"></div>
+      <h3>⚙️ Settings</h3>
+      <button class="sh-done" onclick="closeM('adminModal')">រួចរាល់</button>
+    </div>
 
-          const shelfTag = document.createElement("div");
-          shelfTag.className = "shelf-tag";
-          shelfTag.textContent = "ក្បាលធ្នើរ " + item.shelf;
+    <!-- Settings Quick Navigation Tabs -->
+    <div class="set-tabs" id="settingsTabs">
+      <button type="button" class="set-tab active" data-tab="tab-ui" onclick="switchSettingsTab('tab-ui')">🎨 រូបរាង</button>
+      <button type="button" class="set-tab" data-tab="tab-shelf" onclick="switchSettingsTab('tab-shelf')">🏆 ឆាន 2 Link</button>
+      <button type="button" class="set-tab" data-tab="tab-cloud" onclick="switchSettingsTab('tab-cloud')">☁️ ស្តុក/Cloud</button>
+      <button type="button" class="set-tab" data-tab="tab-tools" onclick="switchSettingsTab('tab-tools')">🛠️ ឧបករណ៍</button>
+    </div>
 
-          const itemLine = document.createElement("div");
-          itemLine.className = "item-line";
-          itemLine.textContent = item.code + " • " + item.name + " ×" + item.qty;
+    <!-- TAB 1: រូបរាង, ពណ៌, Icon & Font -->
+    <div class="set-pane active" id="tab-ui">
+      <div class="ios-sec-hdr">ពណ៌ THEME & ម៉ូដ ICON</div>
+      <div class="ios-card">
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:var(--g)">🎨</div>
+            <div>
+              <div class="ios-lbl">ពណ៌ Theme កម្មវិធី</div>
+              <div class="ios-sub">ប្តូរពណ៌ប៊ូតុង, Search Glass & Calc</div>
+            </div>
+          </div>
+          <div class="theme-swatches" id="themeSwatches">
+            <button type="button" class="swatch-btn" data-theme="green" style="background:#14532d" title="បៃតង KHIM" onclick="setUiTheme('green')"></button>
+            <button type="button" class="swatch-btn" data-theme="blue" style="background:#0f3d7a" title="ខៀវ E-Commerce" onclick="setUiTheme('blue')"></button>
+            <button type="button" class="swatch-btn" data-theme="purple" style="background:#581c87" title="ស្វាយទំនើប" onclick="setUiTheme('purple')"></button>
+            <button type="button" class="swatch-btn" data-theme="orange" style="background:#c2410c" title="ទឹកក្រូច" onclick="setUiTheme('orange')"></button>
+            <button type="button" class="swatch-btn" data-theme="slate" style="background:#1e293b" title="ខ្មៅប្រផេះ" onclick="setUiTheme('slate')"></button>
+          </div>
+        </div>
 
-          infoBox.appendChild(shelfTag);
-          infoBox.appendChild(itemLine);
+        <div class="ios-row no-icon" style="display:block;padding-top:10px;padding-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span class="ios-lbl" style="font-size:14px">✨ ម៉ូដ Icon ប៊ូតុង</span>
+            <span class="ios-val" id="iconPackVal" style="font-size:12.5px">Outline</span>
+          </div>
+          <div class="icon-pack-grid">
+            <div class="icon-pack-card" data-pack="outline" onclick="setIconPack('outline')">
+              <div class="icon-pack-preview">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+              </div>
+              <div class="icon-pack-name">Outline</div>
+            </div>
+            <div class="icon-pack-card" data-pack="commerce" onclick="setIconPack('commerce')">
+              <div class="icon-pack-preview">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 4h4v3h-4V4z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h2v16H4zm4 0h1v16H8zm3 0h2v16h-2zm4 0h1v16h-1zm3 0h2v16h-2z"/></svg>
+              </div>
+              <div class="icon-pack-name">Commerce</div>
+            </div>
+            <div class="icon-pack-card" data-pack="classic" onclick="setIconPack('classic')">
+              <div class="icon-pack-preview">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="icon-pack-name">Classic</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          const checkBtn = document.createElement("button");
-          checkBtn.type = "button";
-          checkBtn.className = "check-btn" + (item.done ? " checked" : "");
-          checkBtn.setAttribute("aria-label", item.done ? "ដកធីកវិញ" : "ធីកថាយករួច");
-          checkBtn.innerHTML =
-            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+      <div class="ios-sec-hdr">ពុម្ពអក្សរតារាង (FONT)</div>
+      <div class="ios-card">
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#5856d6">Aa</div>
+            <div>
+              <div class="ios-lbl">Font តារាងទាំងអស់</div>
+              <div class="ios-sub" id="customFontName">ក្រដាស • ពណ៌ • ឈ្មោះ</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <select class="ios-select" id="tableFontSelect" onchange="setTableFont(this.value)">
+              <option value="'Kantumruy Pro','Plus Jakarta Sans',sans-serif">Kantumruy Pro</option>
+              <option value="'Noto Sans Khmer',sans-serif">Noto Sans Khmer</option>
+              <option value="'Battambang',sans-serif">Battambang</option>
+              <option value="'Siemreap',sans-serif">Siemreap</option>
+              <option value="'LimonF5',sans-serif">Limon F5</option>
+              <option value="'LimonR1',sans-serif">Limon R1</option>
+              <option value="'LimonR3',sans-serif">Limon R3</option>
+              <option value="'LimonF2',sans-serif">Limon F2</option>
+            </select>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#007aff">🔤</div>
+            <div>
+              <div class="ios-lbl">Upload File Font ផ្ទាល់ខ្លួន</div>
+              <div class="ios-sub">.ttf / .otf / .woff2</div>
+            </div>
+          </div>
+          <label class="ios-file-btn">
+            ជ្រើស Font
+            <input type="file" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="uploadCustomFont(event)">
+          </label>
+        </div>
+      </div>
 
-          checkBtn.addEventListener("click", function () {
-            item.done = !item.done;
-            render();
-          });
+      <div class="ios-sec-hdr">រូបភាពវិលជុំ (GIF / STICKER)</div>
+      <div class="ios-card">
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#ff2d55">🎭</div>
+            <div>
+              <div class="ios-lbl">បង្ហាញរូបមានចលនាលើក្បាល</div>
+              <div class="ios-sub" id="gifStatusSub">កំពុងបើកបង្ហាញ</div>
+            </div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="toggleStageSwitch" checked onchange="toggleStageEnabled(this.checked)">
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-          card.appendChild(infoBox);
-          card.appendChild(checkBtn);
-          pickListEl.appendChild(card);
-        });
-      }
+        <div class="ios-row tap" onclick="toggleDrawer('gifDrawer')">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#ff9500">🖼️</div>
+            <div>
+              <div class="ios-lbl">គ្រប់គ្រងរូបភាពវិលជុំ</div>
+              <div class="ios-sub" id="gifCountText">កំពុងប្រើ 0 / 20 រូប</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val" id="gifCountBadge">0 រូប</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+        <div class="ios-drawer" id="gifDrawer">
+          <label class="ios-file-btn" style="width:100%">
+            + បញ្ចូលរូបភាព / GIF (រហូតដល់ ២០ រូប)
+            <input type="file" id="gifFileInput" accept="image/gif,image/png,image/webp,image/jpeg" multiple style="display:none" onchange="addGifFiles(event)">
+          </label>
+          <div class="gif-grid" id="gifGrid"></div>
+          <button class="btn rd" style="margin-top:10px" onclick="clearAllGifs()">លុបរូបវិលជុំទាំងអស់</button>
+        </div>
+      </div>
+    </div>
 
-      loadOrderBtnEl.addEventListener("click", function () {
-        const val = orderInputEl.value.trim();
-        if (val) {
-          currentOrder = val;
-          if (fallbackSampleOrders[val]) {
-            items = fallbackSampleOrders[val].map((x) => ({ ...x, done: false }));
-          } else {
-            items = [
-              { id: Date.now() + "-1", shelf: "A-01", code: val.slice(0, 4).toUpperCase() || "A01", name: "ទំនិញតាម Order", qty: 1, done: false }
-            ];
-          }
-          render();
-        }
-      });
+    <!-- TAB 2: តារាងឆាន (ភ្ជាប់ 2 Link) -->
+    <div class="set-pane" id="tab-shelf">
+      <div class="ios-sec-hdr">ការកំណត់តារាងឆាន</div>
+      <div class="ios-card">
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#34c759">🏆</div>
+            <div>
+              <div class="ios-lbl">បង្ហាញតារាងឆានលើក្រដាស</div>
+              <div class="ios-sub" id="shelfToggleSub">បើកបង្ហាញលេខក្បាលឆាន</div>
+            </div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="toggleShelfSwitch" checked onchange="toggleShelfEnabled(this.checked)">
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-      nextOrderBtnEl.addEventListener("click", function () {
-        orderInputEl.value = "";
-        orderInputEl.focus();
-        items = items.map((x) => ({ ...x, done: false }));
-        const nextNum = Number(currentOrder);
-        currentOrder = Number.isFinite(nextNum) && nextNum > 0 ? String(nextNum + 1) : currentOrder;
-        render();
-      });
+        <div class="ios-row tap" onclick="openShelfModalForCurrent()">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#ff9500">🗂️</div>
+            <div>
+              <div class="ios-lbl">បើកតារាងឆាន & កែប្រឡោះ</div>
+              <div class="ios-sub" id="shelfSyncStatus">ចុចដើម្បីមើលប្លង់ឆាន</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val" id="shelfTotalRacksBadge">2 ឆាន</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+      </div>
 
-      render();
-    })();
-  </script>
+      <div class="ios-sec-hdr">ភ្ជាប់ GOOGLE SHEET ទាំង 2 LINK</div>
+      <div class="ios-card" style="padding:12px">
+        <div class="link-box green">
+          <div class="link-box-title">🟢 Link ទី 1 (ឆានរបស់បង — ឧ. K / Y)</div>
+          <input class="inp" id="shelfSheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/..." onchange="saveShelfSheetUrl(this.value)">
+          <input class="inp" style="margin-top:6px" id="shelfPrefixInput" placeholder="ត្រកូលកូដ Link 1 (ឧ. K, Y ឬទុកទទេ)" onchange="saveShelfPrefix(this.value)">
+        </div>
+
+        <div class="link-box blue">
+          <div class="link-box-title">🔵 Link ទី 2 (ឆានក្រុមផ្សេង — ឧ. ត្រកូល A)</div>
+          <input class="inp" id="shelfSheetUrl2Input" placeholder="ដាក់ Link Google Sheet ទី 2 នៅទីនេះ..." onchange="saveShelfSheetUrl2(this.value)">
+          <input class="inp" style="margin-top:6px" id="shelfPrefix2Input" placeholder="ត្រកូលកូដ Link 2 (ឧ. A សម្រាប់ A-1..A-100)" onchange="saveShelfPrefix2(this.value)">
+        </div>
+
+        <button class="btn" onclick="syncShelfFromGoogleSheet(true)">🔄 ទាញទិន្នន័យពី Link ទាំង 2 ឥឡូវនេះ</button>
+
+        <div class="g2" style="margin-top:8px">
+          <label class="btn lt" style="display:flex;align-items:center;justify-content:center;margin-top:0;cursor:pointer">
+            📥 Import Excel/CSV
+            <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importShelfFile(event)">
+          </label>
+          <button class="btn lt" style="margin-top:0" onclick="toggleDrawer('pasteShelfBox')">📋 Paste ពី Sheet</button>
+        </div>
+
+        <div id="pasteShelfBox" style="display:none;margin-top:8px">
+          <textarea class="inp" id="shelfPasteArea" rows="4" placeholder="Copy ពី Sheet មក Paste នៅទីនេះ (ឧ. K-1 និងជួរកូដ)..."></textarea>
+          <button class="btn blue" onclick="importShelfFromPaste()">📥 បញ្ចូលទិន្នន័យ Paste</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CLOUD, EXCEL & CATALOG -->
+    <div class="set-pane" id="tab-cloud">
+      <div class="ios-sec-hdr">បញ្ចូលទិន្នន័យស្តុកមេ</div>
+      <div class="ios-card">
+        <div class="ios-row">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#34c759">📂</div>
+            <div>
+              <div class="ios-lbl" id="cloudStatusLabel">ទម្លាក់ File មេ (.xlsx / .json)</div>
+              <div class="ios-sub" id="cloudSubLabel">ទម្លាក់ម្ដង ប្រើបានទាំងអស់គ្នា</div>
+            </div>
+          </div>
+          <label class="ios-file-btn green">
+            ជ្រើស File
+            <input type="file" accept=".xlsx,.xls,.csv,.json" style="display:none" onchange="handleQuickMasterDrop(event)">
+          </label>
+        </div>
+        <div id="upStatus" style="font-size:12px;font-weight:700;color:var(--g);padding:0 16px 10px;display:none"></div>
+
+        <div class="ios-row tap" onclick="exportExcel()">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#10b981">📊</div>
+            <div>
+              <div class="ios-lbl">ទាញយក Excel លទ្ធផលរាប់ស្តុក</div>
+              <div class="ios-sub" id="stats">រាប់ហើយ 0 កូដ</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val">.xlsx</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ios-sec-hdr">FIREBASE CLOUD SYNC</div>
+      <div class="ios-card">
+        <div class="ios-row tap" onclick="syncSharedToCloud(true)">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#007aff">☁️</div>
+            <div>
+              <div class="ios-lbl">Save ទៅ Cloud (Firebase)</div>
+              <div class="ios-sub">ផ្ញើទិន្នន័យមេទៅក្រុមការងារទាំងអស់</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val">Push</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+
+        <div class="ios-row tap" onclick="pullSharedFromCloud(true)">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#5ac8fa">⬇️</div>
+            <div>
+              <div class="ios-lbl">ទាញទិន្នន័យពី Cloud</div>
+              <div class="ios-sub">ទាញ Catalog & រូបថ្មីពីក្រុមការងារ</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val">Pull</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+
+        <div class="ios-row tap" onclick="toggleDrawer('linksDrawer')">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#8e8e93">🔗</div>
+            <div>
+              <div class="ios-lbl">កំណត់ Link Firebase & Android APK</div>
+              <div class="ios-sub">កែប្រែ URL Server ឬ Link ទាញយក App</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+        <div class="ios-drawer" id="linksDrawer">
+          <label class="lbl" style="margin-top:0">Firebase Database URL</label>
+          <input class="inp" id="firebaseUrlInput" placeholder="https://..." onchange="saveFirebaseUrl(this.value)">
+          <label class="lbl">Link ទាញយក Android APK</label>
+          <input class="inp" id="apkLinkInput" placeholder="https://.../KHIM-Stock.apk" onchange="saveApkUrl(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ឧបករណ៍បន្ថែម, BACKUP & CACHE -->
+    <div class="set-pane" id="tab-tools">
+      <div class="ios-sec-hdr">បន្ថែមកូដ & APP</div>
+      <div class="ios-card">
+        <div class="ios-row tap" onclick="toggleDrawer('newCodeDrawer')">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#ff9500">➕</div>
+            <div>
+              <div class="ios-lbl">បង្កើតកូដថ្មីដោយដៃ</div>
+              <div class="ios-sub">បន្ថែមមុខទំនិញថ្មីចូលតារាង</div>
+            </div>
+          </div>
+          <div class="ios-right"><span class="ios-chev">›</span></div>
+        </div>
+        <div class="ios-drawer" id="newCodeDrawer">
+          <div class="g2"><input class="inp" id="nCode" placeholder="កូដ ឧ. Y300"><input class="inp" type="number" step="0.01" id="nPrice" placeholder="តម្លៃ ($)"></div>
+          <div class="g2" style="margin-top:6px"><input class="inp" id="nName" placeholder="ឈ្មោះអីវ៉ាន់"><input class="inp" id="nGroup" placeholder="ប្រភេទ"></div>
+          <input class="inp" id="nColors" placeholder="ពណ៌ (ក្បៀស ,)" style="margin-top:6px">
+          <button class="btn" onclick="createProduct()">+ បន្ថែមកូដថ្មី</button>
+        </div>
+
+        <div class="ios-row tap" onclick="downloadAndroidApk()">
+          <div class="ios-row-left">
+            <div class="ios-ico" style="background:#30b0c7">🤖</div>
+            <div>
+              <div class="ios-lbl">ទាញយក App Android</div>
+              <div class="ios-sub">ដំឡើងលើទូរសព្ទ Android</div>
+            </div>
+          </div>
+          <div class="ios-right">
+            <span class="ios-val">APK</span>
+            <span class="ios-chev">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ios-sec-hdr">BACKUP, CACHE & សម្អាតទិន្នន័យ</div>
+      <div class="ios-card" style="padding:12px">
+        <div class="g2">
+          <button class="btn dk" style="margin-top:0" onclick="backupJSON()">💾 Backup (.json)</button>
+          <button class="btn lt" style="margin-top:0" onclick="document.getElementById('restoreFile').click()">📥 Restore Backup</button>
+        </div>
+        <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreJSON(event)">
+        <button class="btn blue" onclick="refreshAppCacheKeepData()">🔄 សម្អាត Cache កម្មវិធី (រក្សាទិន្នន័យដើម)</button>
+        <button class="btn rd" onclick="resetCounts()">🗑️ លុបចំនួនរាប់របស់ម៉ាស៊ីននេះ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- បញ្ចូល JavaScript ទាំង ៣ ផ្នែកតាមលំដាប់ -->
+<script src="storage-cloud.js"></script>
+<script src="shelf-calc.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
